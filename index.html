@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A3A8F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Expert phyto">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Expert phyto</title>
+<style>
+:root{
+  --bg:#EDF1E8; --surface:#FFFFFF; --ink:#1B2B22; --muted:#5B6B60; --line:#CBD5C5;
+  --indigo:#2A3A8F; --indigo-soft:#E4E8F8; --ochre:#8A5A0B; --ochre-soft:#F7ECD2;
+  --red:#B3261E; --red-soft:#FADEDA; --green:#2F6B3F; --green-soft:#DDEBDD;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--sans);-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+#app{height:100dvh;display:flex;flex-direction:column;max-width:720px;margin:0 auto;background:var(--bg)}
+
+/* En-tête */
+header{background:var(--surface);padding-top:env(safe-area-inset-top,0px);flex:none}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.bar h1{font:600 20px/1.1 var(--serif);margin:0;flex:none;letter-spacing:.01em}
+.bar select{flex:1;min-width:0;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:0 10px;font-size:15px}
+.bogolan{height:10px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='10'%3E%3Crect width='24' height='10' fill='%232A3A8F'/%3E%3Cpath d='M0 8 L6 2 L12 8 L18 2 L24 8' fill='none' stroke='%23E8C77A' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x}
+
+/* Zone principale */
+main{flex:1;overflow-y:auto;padding:14px 14px 22px;-webkit-overflow-scrolling:touch}
+h2{font:600 22px/1.2 var(--serif);margin:4px 0 10px}
+h3{font:600 17px/1.25 var(--serif);margin:0 0 6px}
+p{margin:0 0 10px}
+.note{font-size:14px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.sec{margin:22px 0 8px;font:600 18px/1.2 var(--serif)}
+
+/* Boutons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border:0;border-radius:12px;background:var(--indigo);color:#fff;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--indigo);border:1.5px solid var(--indigo)}
+.btn.warn{background:var(--red)}
+.btn.small{min-height:38px;padding:0 12px;font-size:14px}
+.btn.block{display:flex;width:100%}
+.btn[disabled]{opacity:.5}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #7C8CE0;outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Bannières */
+.ban{border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:15px}
+.ban strong{font-weight:700}
+.ban.visit{background:var(--indigo-soft);border:1px solid #BCC5EE}
+.ban.visit.due{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+.ban.dar{background:var(--red-soft);border:1px solid #EDB7B1;color:#6E130E}
+.ban.ctl{background:var(--ochre-soft);border:1px solid #E6CF9C;color:#5E3C05}
+.ban.off{background:#E8E8E8;color:#333}
+.ban .btn{margin-top:8px}
+
+/* Conversation */
+.msg.me{margin:10px 0 10px auto;max-width:88%;background:var(--indigo);color:#fff;border-radius:16px 16px 4px 16px;padding:10px 13px;overflow-wrap:anywhere}
+.exp{margin:10px 0;max-width:96%;background:var(--surface);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:12px 13px;overflow-wrap:anywhere}
+.exp .say{margin:0 0 8px}
+.exp > :last-child{margin-bottom:0}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.thumbs img{width:84px;height:84px;object-fit:cover;border-radius:10px;border:2px solid rgba(255,255,255,.5);background:#ddd}
+.alert{border-radius:10px;padding:9px 11px;margin:8px 0;font-size:15px;border-left:5px solid}
+.alert.info{background:var(--indigo-soft);border-color:var(--indigo)}
+.alert.attention{background:var(--ochre-soft);border-color:var(--ochre)}
+.alert.urgent{background:var(--red-soft);border-color:var(--red);font-weight:600}
+.mission{border:1.5px solid var(--indigo);border-radius:12px;margin:10px 0;overflow:hidden}
+.mission .mh{height:8px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='10'%3E%3Crect width='24' height='10' fill='%232A3A8F'/%3E%3Cpath d='M0 8 L6 2 L12 8 L18 2 L24 8' fill='none' stroke='%23E8C77A' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x}
+.mission .mb{padding:10px 12px}
+.mission h3{margin-bottom:8px}
+.step{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line)}
+.step:first-of-type{border-top:0}
+.step input{width:24px;height:24px;margin:1px 0 0;flex:none;accent-color:var(--indigo)}
+.step span{flex:1}
+.step.done span{color:var(--muted);text-decoration:line-through}
+.diag{margin:10px 0;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#F7F9F4}
+.hyp{margin:8px 0}
+.hyp .hn{display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.hyp .bar2{height:8px;border-radius:5px;background:var(--line);margin:4px 0;overflow:hidden}
+.hyp .bar2 i{display:block;height:100%;background:var(--indigo)}
+.hyp .chk{font-size:14px;color:var(--muted)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{background:var(--green-soft);color:#1F4A2B;border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}
+.think{display:flex;align-items:center;gap:8px;color:var(--muted);margin:10px 0;font-size:15px}
+.dots i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--indigo);margin-right:4px;animation:pulse 1.2s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.dots i{animation:none;opacity:.6}}
+.err{background:var(--red-soft);border:1px solid #EDB7B1;border-radius:12px;padding:10px 12px;margin:10px 0;color:#6E130E}
+
+/* Formulaires */
+.form{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.fld{display:block;margin-bottom:12px}
+.fld > span{display:block;font-weight:600;margin-bottom:4px;font-size:15px}
+.fld input,.fld select,.fld textarea,.inp{width:100%;min-height:46px;border:1.5px solid var(--line);border-radius:10px;padding:8px 11px;background:#fff;font-size:16px}
+.fld textarea{min-height:72px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;min-height:46px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-weight:600}
+.seg button.sel{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+
+/* Composer */
+#composer{flex:none;background:var(--surface);border-top:1px solid var(--line);padding:8px 10px}
+#composer:empty{display:none}
+#composer .drafts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.draft{position:relative}
+.draft img{width:54px;height:54px;border-radius:8px;object-fit:cover;display:block}
+.draft button{position:absolute;top:-7px;right:-7px;width:24px;height:24px;border-radius:50%;border:0;background:var(--ink);color:#fff;font-size:14px;line-height:24px;padding:0}
+#composer .line{display:flex;align-items:flex-end;gap:6px}
+#composer textarea{flex:1;min-height:46px;max-height:130px;resize:none;border:1.5px solid var(--line);border-radius:12px;padding:10px 11px;font-size:16px;line-height:1.35;background:#fff}
+.ic{flex:none;width:46px;height:46px;border-radius:12px;border:1.5px solid var(--line);background:#fff;display:grid;place-items:center;padding:0;cursor:pointer}
+.ic.send{background:var(--indigo);border-color:var(--indigo);color:#fff}
+.ic[disabled]{opacity:.45}
+svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* Navigation */
+nav{flex:none;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{border:0;background:none;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12.5px;color:var(--muted);font-weight:600;cursor:pointer}
+nav button.on{color:var(--indigo)}
+nav button.on svg{stroke-width:2.4}
+
+/* Parcelles et journal */
+.pc h3{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.pc .tag{font:600 12px/1 var(--sans);background:var(--green-soft);color:#1F4A2B;padding:4px 8px;border-radius:999px}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:15px;margin:6px 0 10px}
+.meta dt{color:var(--muted)} .meta dd{margin:0}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item .x{flex:none}
+.eff{display:inline-block;margin-top:4px;font-weight:700;font-size:14px;padding:2px 9px;border-radius:999px}
+.eff.good{background:var(--green-soft);color:#1F4A2B}
+.eff.bad{background:var(--red-soft);color:#6E130E}
+.eff.mid{background:var(--ochre-soft);color:#5E3C05}
+.chart{width:100%;height:auto;display:block}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.steps{padding-left:20px;margin:6px 0 12px}
+.steps li{margin-bottom:6px}
+a{color:var(--indigo)}
+.pwdrow{display:flex;gap:8px}
+.pwdrow input{flex:1}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="bar"><h1>Expert phyto</h1><select id="sel" aria-label="Parcelle active"></select></div>
+    <div class="bogolan" aria-hidden="true"></div>
+  </header>
+  <main id="main"></main>
+  <div id="composer"></div>
+  <nav id="nav" aria-label="Navigation"></nav>
+</div>
+<input type="file" id="f-cam" accept="image/*" capture="environment" hidden>
+<input type="file" id="f-gal" accept="image/*" multiple hidden>
+<input type="file" id="f-import" accept="application/json,.json" hidden>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   RÉGLAGES PAR DÉFAUT
+   Les noms de modèles Gemini changent : tu peux les modifier dans
+   l'onglet Réglages sans toucher au code.
+   ===================================================================== */
+const DEFAULT_MODEL = 'gemini-3-flash-preview';
+const FALLBACK_MODELS = ['gemini-3.1-flash-lite', 'gemini-flash-latest'];
+
+/* =====================================================================
+   PROMPT DE L'EXPERT
+   ===================================================================== */
+const SYSTEM_PROMPT = `Tu es « l'Expert » : ingénieur phytosanitaire avec plus de 20 ans d'expérience en cultures maraîchères d'Afrique de l'Ouest (Sahel, Mali), spécialiste du gombo, du piment et du poivron. Tu as été engagé pour suivre cette parcelle de la levée (ou de la reprise après repiquage) jusqu'à la fin de la dernière récolte.
+
+RÔLES
+- L'utilisateur est tes yeux, tes mains et tes pieds. Il va où tu l'envoies, regarde, compte, photographie, applique. Toi, tu as la connaissance : tu diagnostiques, tu décides, tu prescris et tu vérifies que tes traitements ont marché. Ne renvoie jamais la décision à l'utilisateur (« à vous de voir ») : recommande clairement et explique en une phrase pourquoi.
+- Tu es proactif : tu planifies les visites, tu anticipes les risques selon le stade de la culture, la saison (chaleur, pluies, harmattan) et l'historique.
+
+MÉTHODE
+1. Première inspection : parcours en W, 20 points numérotés répartis sur la parcelle, 5 plants par point (100 plants). Adapte si la parcelle est petite. Explique pour quelqu'un sans formation.
+2. UNE seule mission à la fois, en étapes courtes et concrètes : où aller, quoi regarder (dessous des feuilles, collet, racines, tiges, fleurs, fruits, jeunes pousses), quoi compter, quelle photo prendre (de près, bien éclairée, une feuille atteinte et une plante entière).
+3. Pour recueillir des données, utilise « collecte » (champs précis, 6 maximum) plutôt que de longues questions.
+4. Diagnostic : hypothèses classées avec une confiance en %, et pour chacune la preuve à vérifier. Si la confiance de la première hypothèse est inférieure à 70 %, demande une preuve supplémentaire avant de prescrire. Distingue les problèmes parasitaires des carences, du stress hydrique, des brûlures et de la phytotoxicité.
+5. Prescription : lutte intégrée d'abord (mesures culturales, pièges, auxiliaires, extraits de neem, savon noir, etc.), puis chimique seulement si le seuil de nuisibilité est dépassé ou si le risque est élevé. Pour un produit chimique : donne la matière active et le groupe de mode d'action, fais alterner les modes d'action, indique le délai avant récolte (DAR) et la protection à porter, et précise que la dose exacte se lit sur l'étiquette du produit vendu localement. Ne cite un nom commercial que si tu es sûr qu'il existe en Afrique de l'Ouest, sinon cite la matière active. N'invente jamais une dose : si tu n'es pas sûr, dis-le.
+6. Vérification : après chaque traitement, programme un contrôle 3 à 7 jours plus tard (selon le produit), fais réinspecter les MÊMES points et compare avec l'incidence d'avant. Conclus clairement : efficace, insuffisant ou inefficace, puis décide : continuer, changer de mode d'action, ou revoir le diagnostic.
+7. Avant toute récolte : vérifie le DAR. Si « recolte_interdite_jusqua » est dans le futur, dis-le clairement dès que l'utilisateur parle de récolter.
+8. Fin de cycle : nettoyage des résidus de culture, rotation.
+
+DONNÉES
+- Tu reçois l'ÉTAT ACTUEL de la parcelle, calculé par l'application. Il est fiable : ne le contredis pas. Réutilise exactement les mêmes noms de problèmes que ceux qu'il contient, pour que le suivi reste cohérent.
+- « releves » : n'envoie que de NOUVELLES observations chiffrées que l'utilisateur vient de te donner (plants examinés, plants atteints). Ne répète jamais des relevés déjà enregistrés.
+- « traitement » : n'enregistre un traitement que quand l'utilisateur confirme l'avoir appliqué. Ne le répète pas ensuite.
+- « resume_memoire » : tiens à jour en quelques phrases (600 caractères maximum) l'histoire utile de la parcelle (problèmes rencontrés, décisions, ce qui a marché ou non). Renvoie-le seulement quand il change.
+
+STYLE
+- Français simple, phrases courtes, ton calme et sûr, comme un technicien de terrain. L'utilisateur lit sur un téléphone, au champ. Pas de jargon sans explication.
+- Tu n'es pas infaillible : indique ta confiance et dis « je ne sais pas » quand c'est le cas.
+- Si l'utilisateur décrit une intoxication ou une exposition à un produit, dis-lui d'aller immédiatement dans un centre de santé.
+- Si la question n'a rien à voir avec la parcelle, ramène-le poliment au suivi.
+
+FORMAT DE RÉPONSE
+Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour et sans balises de code :
+{
+ "message": "ce que tu dis à l'utilisateur (1 à 5 phrases)",
+ "mission": { "titre": "...", "etapes": ["étape 1", "étape 2"] },
+ "collecte": [ { "id": "pucerons", "label": "Sur 100 plants, combien portent des pucerons ?", "type": "nombre" } ],
+ "diagnostic": { "hypotheses": [ { "nom": "...", "confiance": 80, "a_verifier": "..." } ], "conclusion": "..." },
+ "alerte": { "niveau": "info | attention | urgent", "texte": "..." },
+ "releves": [ { "point": 7, "probleme": "pucerons", "plants_examines": 5, "plants_atteints": 2 } ],
+ "traitement": { "produit": "...", "matiere_active": "...", "type": "biologique | culturale | chimique", "dose": "...", "methode": "...", "probleme_cible": "pucerons", "dar_jours": 0, "controle_jours": 4, "date": "AAAA-MM-JJ (facultatif)" },
+ "prochaine_visite": { "dans_jours": 4, "motif": "..." },
+ "resume_memoire": "..."
+}
+Types de collecte possibles : "nombre", "texte", "oui_non", "photo", "choix" (avec "options": ["...", "..."]).
+Tous les champs sont facultatifs sauf « message ». Omets ou mets null ce qui ne s'applique pas. Pour un relevé global (sans numéro de point), mets "point": null.`;
+
+/* =====================================================================
+   OUTILS
+   ===================================================================== */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const today = () => new Date().toLocaleDateString('sv');
+const addDays = (d, n) => { const x = new Date(d + 'T12:00:00'); x.setDate(x.getDate() + n); return x.toLocaleDateString('sv'); };
+const diffDays = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 864e5);
+const frDate = d => new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+const sameProb = (a, b) => { a = norm(a); b = norm(b); return !!a && !!b && (a.includes(b) || b.includes(a)); };
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+const num = v => Math.max(0, Math.round(Number(v) || 0));
+
+const ICONS = {
+  mission: '<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h9"/>',
+  parcelles: '<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>',
+  journal: '<path d="M4 20V4M4 20h16"/><path d="M8 15l4-5 3 3 5-7"/>',
+  reglages: '<path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h10M20 18h0"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+  cam: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>',
+  gal: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 9"/>',
+  send: '<path d="M3 11l18-8-8 18-2-8z"/>'
+};
+const icon = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+
+/* =====================================================================
+   STOCKAGE LOCAL (IndexedDB) : tout reste dans le téléphone
+   ===================================================================== */
+const idb = (() => {
+  let db;
+  const open = () => db ? Promise.resolve(db) : new Promise((res, rej) => {
+    const r = indexedDB.open('phyto', 1);
+    r.onupgradeneeded = () => { r.result.createObjectStore('kv'); r.result.createObjectStore('photos'); };
+    r.onsuccess = () => { db = r.result; res(db); };
+    r.onerror = () => rej(r.error);
+  });
+  const tx = async (store, mode, fn) => {
+    const d = await open();
+    return new Promise((res, rej) => {
+      const t = d.transaction(store, mode);
+      const rq = fn(t.objectStore(store));
+      t.oncomplete = () => res(rq && rq.result);
+      t.onerror = () => rej(t.error);
+    });
+  };
+  return {
+    get: (s, k) => tx(s, 'readonly', o => o.get(k)),
+    set: (s, k, v) => tx(s, 'readwrite', o => o.put(v, k)),
+    del: (s, k) => tx(s, 'readwrite', o => o.delete(k)),
+    clear: s => tx(s, 'readwrite', o => o.clear()),
+    entries: async s => {
+      const d = await open();
+      return new Promise((res, rej) => {
+        const out = {}; const t = d.transaction(s, 'readonly');
+        t.objectStore(s).openCursor().onsuccess = e => { const c = e.target.result; if (c) { out[c.key] = c.value; c.continue(); } };
+        t.oncomplete = () => res(out); t.onerror = () => rej(t.error);
+      });
+    }
+  };
+})();
+
+let S = { version: 1, actif: null, parcelles: [] };
+let view = 'mission';
+let editing = null;           // null | 'new' | id de parcelle
+let busy = false;
+let lastError = null;
+let draft = [];               // ids des photos en préparation (composer)
+let formPhotos = {};          // photos des champs "photo" des formulaires
+let photoTarget = 'draft';
+let deferredInstall = null;
+const photoCache = {};
+
+const save = () => idb.set('kv', 'state', S).catch(() => {});
+const cur = () => S.parcelles.find(p => p.id === S.actif) || null;
+
+/* =====================================================================
+   CALCULS (faits par le code, jamais par l'IA)
+   ===================================================================== */
+function seriesFor(p) {
+  const m = {}, names = {};
+  for (const r of p.releves) {
+    const k = norm(r.probleme); if (!k) continue;
+    names[k] = names[k] || r.probleme.trim();
+    const o = ((m[k] ||= {})[r.date] ||= { ex: 0, at: 0 });
+    o.ex += r.plants_examines; o.at += r.plants_atteints;
+  }
+  const out = {};
+  for (const k in m) {
+    out[names[k]] = Object.entries(m[k]).sort(([a], [b]) => a < b ? -1 : 1).map(([date, o]) => ({
+      date, incidence: o.ex ? Math.round(1000 * o.at / o.ex) / 10 : 0, examines: o.ex, atteints: o.at
+    }));
+  }
+  return out;
+}
+
+function darInfo(p) {
+  let until = null, prod = null;
+  for (const t of p.traitements) {
+    if (t.dar_jours > 0) {
+      const f = addDays(t.date, t.dar_jours);
+      if (f > today() && (!until || f > until)) { until = f; prod = t.produit; }
+    }
+  }
+  return until ? { until, prod } : null;
+}
+
+function controlesEnAttente(p) {
+  return p.traitements.filter(t => t.controle_jours > 0).map(t => ({ t, du: addDays(t.date, t.controle_jours) }))
+    .filter(({ t }) => !p.releves.some(r => r.date > t.date && sameProb(r.probleme, t.probleme_cible)));
+}
+
+function efficacite(p, t) {
+  const ser = seriesFor(p);
+  const key = Object.keys(ser).find(k => sameProb(k, t.probleme_cible));
+  if (!key) return null;
+  const pts = ser[key];
+  const avant = [...pts].reverse().find(x => x.date <= t.date);
+  const apres = pts.find(x => x.date > t.date);
+  if (!avant || !apres) return null;
+  const d = apres.incidence - avant.incidence;
+  const verdict = d <= -Math.max(5, avant.incidence * 0.4) ? 'good' : d >= 3 ? 'bad' : 'mid';
+  return { avant: avant.incidence, apres: apres.incidence, verdict };
+}
+
+function surface(p) {
+  return p.superficie || (p.longueur && p.largeur ? Math.round(p.longueur * p.largeur) : null);
+}
+
+function contexte(p) {
+  const ser = seriesFor(p), rel = {};
+  for (const k in ser) rel[k] = ser[k].slice(-8);
+  const dates = p.releves.map(r => r.date).sort();
+  const dar = darInfo(p);
+  return {
+    aujourdhui: today(),
+    parcelle: {
+      nom: p.nom, culture: p.culture, mode_de_demarrage: p.mode, date_semis_ou_repiquage: p.debut,
+      jours_depuis_le_debut: p.debut ? diffDays(p.debut, today()) : null,
+      superficie_m2: surface(p), longueur_m: p.longueur || null, largeur_m: p.largeur || null,
+      nombre_de_pieds: p.pieds || null, lieu: p.lieu || null, remarques: p.notes || null
+    },
+    releves_par_probleme: rel,
+    jours_depuis_derniere_inspection: dates.length ? diffDays(dates[dates.length - 1], today()) : null,
+    traitements: p.traitements.map(t => ({
+      produit: t.produit, matiere_active: t.matiere_active, type: t.type, dose: t.dose, date: t.date,
+      probleme_cible: t.probleme_cible,
+      fin_delai_avant_recolte: t.dar_jours > 0 ? addDays(t.date, t.dar_jours) : null,
+      controle_prevu_le: t.controle_jours > 0 ? addDays(t.date, t.controle_jours) : null
+    })),
+    controles_en_attente: controlesEnAttente(p).map(({ t, du }) => ({ traitement: t.produit, cible: t.probleme_cible, a_faire_a_partir_du: du })),
+    recolte_interdite_jusqua: dar ? dar.until : null,
+    prochaine_visite_prevue: p.prochaine ? p.prochaine : null,
+    memoire_de_la_parcelle: p.memoire || null
+  };
+}
+
+/* =====================================================================
+   APPEL À L'EXPERT (Gemini)
+   ===================================================================== */
+async function buildContents(p) {
+  const msgs = p.messages.slice(-16);
+  const out = [];
+  msgs.forEach((m, idx) => {
+    const isLast = idx === msgs.length - 1;
+    const role = m.role === 'user' ? 'user' : 'model';
+    const parts = [];
+    if (role === 'user') {
+      parts.push({ text: m.text });
+      const ph = m.photos || [];
+      if (ph.length && !isLast) parts.push({ text: `[${ph.length} photo(s) envoyée(s) à ce moment-là]` });
+    } else parts.push({ text: m.raw || JSON.stringify({ message: m.text }) });
+    out.push({ role, parts, _ph: role === 'user' && isLast ? (m.photos || []) : [] });
+  });
+  while (out.length && out[0].role !== 'user') out.shift();
+  const merged = [];
+  for (const c of out) {
+    const prev = merged[merged.length - 1];
+    if (prev && prev.role === c.role) { prev.parts.push(...c.parts); prev._ph = [...(prev._ph || []), ...(c._ph || [])]; } else merged.push(c);
+  }
+  for (const c of merged) {
+    for (const id of (c._ph || [])) {
+      let u = photoCache[id] || await idb.get('photos', id);
+      if (u) { photoCache[id] = u; const mime = (u.match(/^data:(.*?);/) || [])[1] || 'image/jpeg'; c.parts.push({ inlineData: { mimeType: mime, data: u.split(',')[1] } }); }
+    }
+    delete c._ph;
+  }
+  return merged;
+}
+
+async function gemini(body) {
+  const key = (localStorage.getItem('pv_key') || '').trim();
+  if (!key) { const e = new Error('Ajoute ta clé Gemini dans Réglages.'); e.status = 401; throw e; }
+  const pref = (localStorage.getItem('pv_model') || DEFAULT_MODEL).trim();
+  const models = [...new Set([pref, ...FALLBACK_MODELS])];
+  let lastErr;
+  for (const m of models) {
+    const ctl = new AbortController();
+    const to = setTimeout(() => ctl.abort(), 90000);
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify(body), signal: ctl.signal
+      });
+      clearTimeout(to);
+      if (r.ok) {
+        const j = await r.json();
+        const parts = j.candidates?.[0]?.content?.parts || [];
+        const text = parts.filter(x => !x.thought).map(x => x.text || '').join('');
+        if (!text) throw Object.assign(new Error('Réponse vide ou bloquée par le filtre de sécurité de Google.'), { fatal: true });
+        return { text, model: m };
+      }
+      const e = await r.json().catch(() => ({}));
+      lastErr = Object.assign(new Error(e.error?.message || ('Erreur ' + r.status)), { status: r.status });
+      if ([400, 401, 403].includes(r.status)) throw lastErr;
+    } catch (err) {
+      clearTimeout(to);
+      if (err.fatal || [400, 401, 403].includes(err.status)) throw err;
+      if (err.name === 'AbortError') lastErr = new Error('Délai dépassé : la connexion est trop lente.');
+      else if (err instanceof TypeError) throw new Error('Pas de connexion internet (ou accès à Google bloqué).');
+      else lastErr = err;
+    }
+  }
+  throw lastErr || new Error('Échec de la requête.');
+}
+
+function friendlyError(e) {
+  const m = e.message || '';
+  if (e.status === 429) return 'La limite gratuite de Google est atteinte pour le moment. Attends quelques minutes (ou demain) puis réessaie.';
+  if (e.status === 404) return 'Modèle introuvable. Va dans Réglages et change le nom du modèle.';
+  if (/API key|API_KEY|PERMISSION|permission/i.test(m) || e.status === 401 || e.status === 403) return 'Clé Gemini refusée. Vérifie-la dans Réglages. (' + m.slice(0, 120) + ')';
+  return m || 'Erreur inconnue.';
+}
+
+function parseExpert(txt) {
+  let t = txt.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+  try { return JSON.parse(t); } catch (_) {
+    const a = t.indexOf('{'), b = t.lastIndexOf('}');
+    if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch (_) {} }
+    return { message: txt };
+  }
+}
+
+async function callExpert(p) {
+  const contents = await buildContents(p);
+  const sys = SYSTEM_PROMPT + '\n\nÉTAT ACTUEL DE LA PARCELLE (calculé par l\'application, fiable) :\n' + JSON.stringify(contexte(p));
+  const { text } = await gemini({ systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: { responseMimeType: 'application/json' } });
+  return parseExpert(text);
+}
+
+function applyResult(p, d) {
+  if (!d || typeof d !== 'object') d = { message: String(d || '') };
+  const saved = {};
+  if (Array.isArray(d.releves)) {
+    let n = 0;
+    for (const r of d.releves) {
+      const ex = num(r.plants_examines), at = Math.min(num(r.plants_atteints), ex);
+      if (!r.probleme || !ex) continue;
+      p.releves.push({ id: uid(), date: today(), point: r.point ?? null, probleme: String(r.probleme).trim(), plants_examines: ex, plants_atteints: at });
+      n++;
+    }
+    if (n) saved.releves = n;
+  }
+  if (d.traitement && d.traitement.produit) {
+    const t = d.traitement;
+    p.traitements.push({
+      id: uid(), date: /^\d{4}-\d{2}-\d{2}$/.test(t.date || '') ? t.date : today(),
+      produit: String(t.produit), matiere_active: t.matiere_active || '', type: t.type || '', dose: t.dose || '',
+      methode: t.methode || '', probleme_cible: t.probleme_cible || '', dar_jours: num(t.dar_jours), controle_jours: num(t.controle_jours)
+    });
+    saved.traitement = String(t.produit);
+  }
+  if (d.prochaine_visite && Number.isFinite(Number(d.prochaine_visite.dans_jours))) {
+    p.prochaine = { date: addDays(today(), num(d.prochaine_visite.dans_jours)), motif: d.prochaine_visite.motif || '' };
+    saved.visite = p.prochaine.date;
+  }
+  if (typeof d.resume_memoire === 'string' && d.resume_memoire.trim()) p.memoire = d.resume_memoire.trim().slice(0, 1500);
+  p.messages.push({ id: uid(), role: 'model', t: new Date().toISOString(), text: d.message || '', raw: JSON.stringify(d), data: d, saved, checks: [], answered: false });
+}
+
+async function sendUser(text, photos = [], hidden = false) {
+  const p = cur(); if (!p || busy) return;
+  const last = p.messages[p.messages.length - 1];
+  if (last && last.role === 'model') last.answered = true;
+  p.messages.push({ id: uid(), role: 'user', t: new Date().toISOString(), text, photos, hidden });
+  lastError = null; busy = true;
+  await save(); render(true);
+  await runExpert(p);
+}
+
+async function runExpert(p) {
+  busy = true; lastError = null; render(true);
+  try {
+    const d = await callExpert(p);
+    applyResult(p, d);
+    await save();
+  } catch (e) {
+    lastError = friendlyError(e);
+  }
+  busy = false; render(true);
+}
+
+/* =====================================================================
+   PHOTOS
+   ===================================================================== */
+async function compress(file, max = 1024, q = 0.72) {
+  let src, w, h;
+  try { src = await createImageBitmap(file); w = src.width; h = src.height; }
+  catch (_) {
+    src = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+    w = src.naturalWidth; h = src.naturalHeight;
+  }
+  const sc = Math.min(1, max / Math.max(w, h));
+  const c = document.createElement('canvas'); c.width = Math.round(w * sc); c.height = Math.round(h * sc);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', q);
+}
+
+async function addPhotos(files) {
+  for (const f of files) {
+    try {
+      const url = await compress(f); const id = uid();
+      await idb.set('photos', id, url); photoCache[id] = url;
+      if (photoTarget === 'draft') { draft.push(id); renderComposer(); }
+      else {
+        (formPhotos[photoTarget] ||= []).push(id);
+        const lab = $('#ph-' + CSS.escape(photoTarget)); if (lab) lab.textContent = formPhotos[photoTarget].length + ' photo(s) ajoutée(s)';
+      }
+    } catch (_) { alert('Impossible de lire cette photo.'); }
+  }
+}
+
+async function hydrate(root = document) {
+  for (const img of root.querySelectorAll('img[data-pid]')) {
+    if (img.getAttribute('src')) continue;
+    const id = img.dataset.pid;
+    let u = photoCache[id] || await idb.get('photos', id).catch(() => null);
+    if (u) { photoCache[id] = u; img.src = u; }
+  }
+}
+
+/* =====================================================================
+   VUES
+   ===================================================================== */
+function render(stick = false) {
+  renderHeader(); renderNav(); renderComposer();
+  const main = $('#main'), p = cur();
+  main.innerHTML = view === 'mission' ? viewMission(p) : view === 'parcelles' ? viewParcelles() : view === 'journal' ? viewJournal(p) : viewReglages();
+  hydrate(main);
+  if (stick && view === 'mission') main.scrollTop = main.scrollHeight;
+}
+
+function renderHeader() {
+  const sel = $('#sel');
+  sel.innerHTML = S.parcelles.length
+    ? S.parcelles.map(p => `<option value="${esc(p.id)}" ${p.id === S.actif ? 'selected' : ''}>${esc(p.nom)} · ${esc(p.culture)}</option>`).join('')
+    : '<option>Aucune parcelle</option>';
+  sel.disabled = !S.parcelles.length || busy;
+}
+
+function renderNav() {
+  const tabs = [['mission', 'Mission'], ['parcelles', 'Parcelles'], ['journal', 'Journal'], ['reglages', 'Réglages']];
+  $('#nav').innerHTML = tabs.map(([k, l]) => `<button data-act="tab" data-v="${k}" class="${view === k ? 'on' : ''}" ${view === k ? 'aria-current="page"' : ''}>${icon(k)}${l}</button>`).join('');
+}
+
+function renderComposer() {
+  const box = $('#composer'), p = cur();
+  const old = $('#msg') ? $('#msg').value : '';
+  if (view !== 'mission' || !p || !localStorage.getItem('pv_key') || !p.messages.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `
+    ${draft.length ? `<div class="drafts">${draft.map(id => `<div class="draft"><img data-pid="${id}" alt="Photo à envoyer"><button data-act="rm-draft" data-id="${id}" aria-label="Retirer la photo">×</button></div>`).join('')}</div>` : ''}
+    <div class="line">
+      <button class="ic" data-act="cam" aria-label="Prendre une photo">${icon('cam')}</button>
+      <button class="ic" data-act="gal" aria-label="Choisir une photo">${icon('gal')}</button>
+      <textarea id="msg" rows="1" placeholder="Écris ce que tu vois ou ce que tu as fait…"></textarea>
+      <button class="ic send" data-act="send" aria-label="Envoyer" ${busy ? 'disabled' : ''}>${icon('send')}</button>
+    </div>`;
+  const ta = $('#msg'); ta.value = old; autoGrow(ta);
+  ta.addEventListener('input', () => autoGrow(ta));
+  hydrate(box);
+}
+const autoGrow = ta => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 130) + 'px'; };
+
+function banners(p) {
+  let h = '';
+  if (!navigator.onLine) h += '<div class="ban off">Pas de connexion. L\'application s\'ouvre, mais l\'expert ne peut répondre qu\'avec internet.</div>';
+  const dar = darInfo(p);
+  if (dar) h += `<div class="ban dar"><strong>Ne pas récolter avant le ${frDate(dar.until)}</strong> (délai après ${esc(dar.prod)}).</div>`;
+  const ctl = controlesEnAttente(p).filter(({ du }) => du <= addDays(today(), 1));
+  ctl.forEach(({ t, du }) => { h += `<div class="ban ctl"><strong>Contrôle à faire</strong> pour « ${esc(t.probleme_cible || t.produit)} » (prévu le ${frDate(du)}). Repasse sur les mêmes points qu'avant le traitement.</div>`; });
+  if (p.prochaine) {
+    const dd = diffDays(today(), p.prochaine.date);
+    const due = dd <= 0;
+    h += `<div class="ban visit ${due ? 'due' : ''}"><strong>${due ? 'Visite à faire maintenant' : 'Prochaine visite : ' + (dd === 1 ? 'demain' : 'dans ' + dd + ' jours') + ' (' + frDate(p.prochaine.date) + ')'}</strong>${p.prochaine.motif ? '<br>' + esc(p.prochaine.motif) : ''}
+      ${due ? '<br><button class="btn small" style="background:#fff;color:var(--indigo)" data-act="visit">Commencer la visite</button>' : ''}</div>`;
+  }
+  return h;
+}
+
+function viewMission(p) {
+  const hasKey = !!localStorage.getItem('pv_key');
+  if (!p || !hasKey) {
+    return `<h2>Bienvenue</h2>
+      <p>Cet expert virtuel suit tes cultures de la levée à la dernière récolte. Il te dit où aller, quoi regarder et quoi faire. Toi, tu es ses yeux et ses mains.</p>
+      <div class="card"><h3>1. Ta parcelle ${p ? '✔' : ''}</h3><p class="note">Culture, date de semis, taille. À remplir une seule fois.</p>
+        ${p ? '' : '<button class="btn block" data-act="parcelle-new">Créer ma parcelle</button>'}</div>
+      <div class="card"><h3>2. Ta clé Gemini ${hasKey ? '✔' : ''}</h3><p class="note">C'est la clé gratuite qui donne accès au cerveau de l'expert.</p>
+        ${hasKey ? '' : '<button class="btn block" data-act="tab" data-v="reglages">Ajouter la clé</button>'}</div>`;
+  }
+  let h = banners(p);
+  if (!p.messages.length) {
+    return h + `<div class="card"><h2>${esc(p.nom)}</h2><p>Prête pour le suivi ? L'expert va se présenter et te donner ta première mission : l'inspection de départ.</p>
+      <button class="btn block" data-act="start" ${busy ? 'disabled' : ''}>Démarrer le suivi</button></div>` + (busy ? thinking() : '') + errBox();
+  }
+  p.messages.forEach((m, i) => {
+    if (m.hidden) return;
+    if (m.role === 'user') h += `<div class="msg me">${fmt(m.text)}${m.photos && m.photos.length ? `<div class="thumbs">${m.photos.map(id => `<img data-pid="${id}" alt="Photo envoyée">`).join('')}</div>` : ''}</div>`;
+    else h += expertHtml(m, i === p.messages.length - 1);
+  });
+  if (busy) h += thinking();
+  h += errBox();
+  return h;
+}
+const thinking = () => '<div class="think"><span class="dots"><i></i><i></i><i></i></span>L\'expert analyse…</div>';
+const errBox = () => lastError ? `<div class="err"><strong>L'expert n'a pas pu répondre.</strong><br>${esc(lastError)}<br><button class="btn small" style="margin-top:8px" data-act="retry">Réessayer</button></div>` : '';
+
+function expertHtml(m, isLast) {
+  const d = m.data || { message: m.text };
+  let h = '<div class="exp">';
+  if (d.message) h += `<p class="say">${fmt(d.message)}</p>`;
+  const lvl = ['info', 'attention', 'urgent'].includes(d.alerte?.niveau) ? d.alerte.niveau : null;
+  if (lvl && d.alerte.texte) h += `<div class="alert ${lvl}">${fmt(d.alerte.texte)}</div>`;
+  if (d.diagnostic && Array.isArray(d.diagnostic.hypotheses) && d.diagnostic.hypotheses.length) {
+    h += '<div class="diag"><h3>Diagnostic</h3>';
+    d.diagnostic.hypotheses.slice(0, 4).forEach(x => {
+      const c = Math.max(0, Math.min(100, num(x.confiance)));
+      const lab = c >= 70 ? 'confiance élevée' : c >= 40 ? 'confiance moyenne' : 'confiance faible';
+      h += `<div class="hyp"><div class="hn"><span>${esc(x.nom)}</span><span>${c} %</span></div><div class="bar2" role="img" aria-label="${lab}"><i style="width:${c}%"></i></div>${x.a_verifier ? `<div class="chk">À vérifier : ${esc(x.a_verifier)}</div>` : ''}</div>`;
+    });
+    if (d.diagnostic.conclusion) h += `<p style="margin-top:8px">${fmt(d.diagnostic.conclusion)}</p>`;
+    h += '</div>';
+  }
+  if (d.mission && Array.isArray(d.mission.etapes) && d.mission.etapes.length) {
+    h += `<div class="mission"><div class="mh"></div><div class="mb"><h3>${esc(d.mission.titre || 'Mission')}</h3>` +
+      d.mission.etapes.map((s, k) => `<label class="step ${m.checks && m.checks[k] ? 'done' : ''}"><input type="checkbox" data-act="check" data-m="${m.id}" data-k="${k}" ${m.checks && m.checks[k] ? 'checked' : ''}><span>${esc(s)}</span></label>`).join('') + '</div></div>';
+  }
+  const s = m.saved || {}, chips = [];
+  if (s.releves) chips.push(`${s.releves} relevé${s.releves > 1 ? 's' : ''} enregistré${s.releves > 1 ? 's' : ''}`);
+  if (s.traitement) chips.push('Traitement noté : ' + esc(s.traitement));
+  if (s.visite) chips.push('Prochaine visite : ' + frDate(s.visite));
+  if (chips.length) h += `<div class="chips">${chips.map(c => `<span class="chip">${c}</span>`).join('')}</div>`;
+  if (isLast && !m.answered && !busy && Array.isArray(d.collecte) && d.collecte.length) h += collecteHtml(d.collecte.slice(0, 6));
+  return h + '</div>';
+}
+
+function collecteHtml(fields) {
+  formPhotos = {};
+  let h = '<div class="form">';
+  fields.forEach((f, k) => {
+    const id = esc(String(f.id || 'champ' + k)), label = esc(f.label || id);
+    if (f.type === 'nombre') h += `<label class="fld"><span>${label}</span><input type="number" inputmode="numeric" min="0" data-fid="${id}" data-label="${label}"></label>`;
+    else if (f.type === 'choix') h += `<label class="fld"><span>${label}</span><select data-fid="${id}" data-label="${label}"><option value="">Choisir…</option>${(f.options || []).map(o => `<option>${esc(o)}</option>`).join('')}<option>Je ne sais pas</option></select></label>`;
+    else if (f.type === 'oui_non') h += `<div class="fld"><span>${label}</span><div class="seg" data-fid="${id}" data-label="${label}" data-val=""><button type="button" data-act="yn" data-v="Oui">Oui</button><button type="button" data-act="yn" data-v="Non">Non</button></div></div>`;
+    else if (f.type === 'photo') h += `<div class="fld"><span>${label}</span><button type="button" class="btn ghost small" data-act="field-photo" data-fid="${id}">${icon('cam')} Prendre la photo</button> <span class="note" id="ph-${id}"></span><div data-fid="${id}" data-label="${label}" data-photo="1"></div></div>`;
+    else h += `<label class="fld"><span>${label}</span><textarea data-fid="${id}" data-label="${label}"></textarea></label>`;
+  });
+  return h + '<button class="btn block" data-act="submit-form">Envoyer mes réponses</button></div>';
+}
+
+/* ---------- Parcelles ---------- */
+function viewParcelles() {
+  if (editing) return formParcelle(editing === 'new' ? null : S.parcelles.find(p => p.id === editing));
+  let h = '<h2>Mes parcelles</h2>';
+  if (!S.parcelles.length) h += '<div class="empty">Aucune parcelle pour le moment.</div>';
+  S.parcelles.forEach(p => {
+    const sf = surface(p);
+    h += `<div class="card pc"><h3><span>${esc(p.nom)}</span>${p.id === S.actif ? '<span class="tag">Active</span>' : ''}</h3>
+      <dl class="meta"><dt>Culture</dt><dd>${esc(p.culture)}</dd><dt>${p.mode === 'repiquage' ? 'Repiquage' : 'Semis'}</dt><dd>${p.debut ? frDate(p.debut) + ' (jour ' + diffDays(p.debut, today()) + ')' : '—'}</dd>
+      ${sf ? `<dt>Surface</dt><dd>${sf} m²</dd>` : ''}${p.pieds ? `<dt>Pieds</dt><dd>${p.pieds}</dd>` : ''}${p.lieu ? `<dt>Lieu</dt><dd>${esc(p.lieu)}</dd>` : ''}</dl>
+      <div class="row">${p.id === S.actif ? '' : `<button class="btn small" data-act="parcelle-pick" data-id="${p.id}">Choisir</button>`}
+      <button class="btn small ghost" data-act="parcelle-edit" data-id="${p.id}">Modifier</button>
+      <button class="btn small ghost" style="color:var(--red);border-color:var(--red)" data-act="parcelle-del" data-id="${p.id}">Supprimer</button></div></div>`;
+  });
+  return h + '<button class="btn block" data-act="parcelle-new">Ajouter une parcelle</button>';
+}
+
+function formParcelle(p) {
+  p = p || {};
+  const cultures = ['Gombo', 'Piment', 'Poivron'];
+  const isOther = p.culture && !cultures.includes(p.culture);
+  return `<h2>${p.id ? 'Modifier la parcelle' : 'Nouvelle parcelle'}</h2>
+    <p class="note">À remplir une seule fois. Ensuite, tu ne fais que les inspections.</p>
+    <label class="fld"><span>Nom de la parcelle</span><input id="p-nom" value="${esc(p.nom || '')}" placeholder="Ex. Gombo du bas-fond"></label>
+    <label class="fld"><span>Culture</span><select id="p-cult">${cultures.map(c => `<option ${p.culture === c ? 'selected' : ''}>${c}</option>`).join('')}<option value="__autre" ${isOther ? 'selected' : ''}>Autre</option></select></label>
+    <label class="fld" id="p-autre-w" ${isOther ? '' : 'hidden'}><span>Nom de la culture</span><input id="p-autre" value="${isOther ? esc(p.culture) : ''}"></label>
+    <div class="grid2">
+      <label class="fld"><span>Démarrage</span><select id="p-mode"><option value="semis" ${p.mode !== 'repiquage' ? 'selected' : ''}>Semis direct</option><option value="repiquage" ${p.mode === 'repiquage' ? 'selected' : ''}>Repiquage</option></select></label>
+      <label class="fld"><span>Date</span><input id="p-debut" type="date" value="${esc(p.debut || today())}"></label>
+    </div>
+    <div class="grid2">
+      <label class="fld"><span>Longueur (m)</span><input id="p-long" type="number" inputmode="decimal" min="0" value="${p.longueur || ''}"></label>
+      <label class="fld"><span>Largeur (m)</span><input id="p-larg" type="number" inputmode="decimal" min="0" value="${p.largeur || ''}"></label>
+    </div>
+    <div class="grid2">
+      <label class="fld"><span>Superficie (m²)</span><input id="p-sup" type="number" inputmode="decimal" min="0" value="${p.superficie || ''}" placeholder="Auto si longueur × largeur"></label>
+      <label class="fld"><span>Nombre de pieds</span><input id="p-pieds" type="number" inputmode="numeric" min="0" value="${p.pieds || ''}"></label>
+    </div>
+    <label class="fld"><span>Lieu (village, bas-fond…)</span><input id="p-lieu" value="${esc(p.lieu || '')}"></label>
+    <label class="fld"><span>Remarques utiles</span><textarea id="p-notes" placeholder="Irrigation, type de sol, cultures précédentes, traitements déjà faits…">${esc(p.notes || '')}</textarea></label>
+    <div class="row"><button class="btn" data-act="parcelle-save" data-id="${p.id || ''}">Enregistrer</button><button class="btn ghost" data-act="parcelle-cancel">Annuler</button></div>`;
+}
+
+/* ---------- Journal ---------- */
+function chart(name, pts, treats) {
+  const W = 320, H = 120, pl = 32, pr = 14, pt = 14, pb = 22;
+  const t0 = new Date(pts[0].date + 'T12:00:00').getTime(), t1 = new Date(pts[pts.length - 1].date + 'T12:00:00').getTime();
+  const ymax = Math.max(20, Math.ceil(Math.max(...pts.map(x => x.incidence)) / 10) * 10);
+  const X = d => t1 === t0 ? pl + (W - pl - pr) / 2 : pl + (new Date(d + 'T12:00:00').getTime() - t0) / (t1 - t0) * (W - pl - pr);
+  const Y = v => pt + (1 - v / ymax) * (H - pt - pb);
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Incidence de ${esc(name)} au fil du temps">`;
+  [0, ymax / 2, ymax].forEach(v => { s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="#CBD5C5"/><text x="${pl - 5}" y="${Y(v) + 4}" font-size="10" text-anchor="end" fill="#5B6B60">${v}%</text>`; });
+  treats.forEach(t => {
+    if (t.date >= pts[0].date && t.date <= pts[pts.length - 1].date) s += `<line x1="${X(t.date)}" x2="${X(t.date)}" y1="${pt}" y2="${H - pb}" stroke="#8A5A0B" stroke-dasharray="4 3" stroke-width="1.6"/><text x="${X(t.date) + 3}" y="${H - pb - 4}" font-size="9" fill="#8A5A0B">traitement</text>`;
+  });
+  if (pts.length > 1) s += `<polyline fill="none" stroke="#2A3A8F" stroke-width="2.4" points="${pts.map(x => X(x.date) + ',' + Y(x.incidence)).join(' ')}"/>`;
+  pts.forEach((x, i) => {
+    s += `<circle cx="${X(x.date)}" cy="${Y(x.incidence)}" r="4" fill="#2A3A8F"/>`;
+    if (i === pts.length - 1 || pts.length <= 4) s += `<text x="${X(x.date)}" y="${Y(x.incidence) - 8}" font-size="11" font-weight="700" text-anchor="middle" fill="#1B2B22">${x.incidence}%</text>`;
+  });
+  s += `<text x="${pl}" y="${H - 5}" font-size="10" fill="#5B6B60">${frDate(pts[0].date)}</text>`;
+  if (pts.length > 1) s += `<text x="${W - pr}" y="${H - 5}" font-size="10" text-anchor="end" fill="#5B6B60">${frDate(pts[pts.length - 1].date)}</text>`;
+  return s + '</svg>';
+}
+
+function viewJournal(p) {
+  if (!p) return '<div class="empty">Crée d\'abord une parcelle.</div>';
+  const ser = seriesFor(p), keys = Object.keys(ser);
+  let h = `<h2>Journal · ${esc(p.nom)}</h2>`;
+  h += '<div class="sec">Incidence des problèmes</div>';
+  if (!keys.length) h += '<div class="empty">Pas encore de relevé. Ils apparaîtront ici après tes inspections.</div>';
+  keys.forEach(k => {
+    const last = ser[k][ser[k].length - 1];
+    h += `<div class="card"><h3>${esc(cap(k))}</h3><p class="note" style="margin-bottom:4px">Part des plants atteints, au dernier relevé : ${last.atteints} sur ${last.examines}</p>${chart(k, ser[k], p.traitements.filter(t => sameProb(t.probleme_cible, k)))}</div>`;
+  });
+  h += '<div class="sec">Traitements</div>';
+  if (!p.traitements.length) h += '<div class="empty">Aucun traitement enregistré.</div>';
+  else h += '<div class="card">' + [...p.traitements].reverse().map(t => {
+    const e = efficacite(p, t);
+    const lab = e ? ({ good: 'Efficace', mid: 'Insuffisant', bad: 'Inefficace' })[e.verdict] : null;
+    return `<div class="item"><div><strong>${esc(t.produit)}</strong> <span class="note">· ${frDate(t.date)}</span><br>
+      <span class="note">${[t.type, t.dose, t.methode].filter(Boolean).map(esc).join(' · ')}</span>
+      ${t.probleme_cible ? `<br><span class="note">Cible : ${esc(t.probleme_cible)}</span>` : ''}
+      ${t.dar_jours > 0 ? `<br><span class="note">Récolte possible dès le ${frDate(addDays(t.date, t.dar_jours))}</span>` : ''}
+      ${e ? `<br><span class="eff ${e.verdict}">${lab} : ${e.avant}% → ${e.apres}%</span>` : (t.controle_jours > 0 ? '<br><span class="note">Contrôle d\'efficacité à venir</span>' : '')}</div>
+      <button class="btn small ghost x" data-act="del-traitement" data-id="${t.id}" aria-label="Supprimer ce traitement">Suppr.</button></div>`;
+  }).join('') + '</div>';
+  h += '<div class="sec">Derniers relevés</div>';
+  const rel = [...p.releves].reverse().slice(0, 25);
+  if (!rel.length) h += '<div class="empty">Rien pour l\'instant.</div>';
+  else h += '<div class="card">' + rel.map(r => `<div class="item"><div>${esc(cap(r.probleme))} <span class="note">· ${frDate(r.date)}${r.point ? ' · point ' + r.point : ''}</span><br><span class="note">${r.plants_atteints} atteints sur ${r.plants_examines}</span></div><button class="btn small ghost x" data-act="del-releve" data-id="${r.id}" aria-label="Supprimer ce relevé">Suppr.</button></div>`).join('') + '</div>';
+  if (p.memoire) h += `<div class="sec">Mémoire de l'expert</div><div class="card note">${fmt(p.memoire)}</div>`;
+  return h;
+}
+
+/* ---------- Réglages ---------- */
+function viewReglages() {
+  const key = localStorage.getItem('pv_key') || '', model = localStorage.getItem('pv_model') || '';
+  return `<h2>Réglages</h2>
+    <div class="card"><h3>Clé Gemini (gratuite)</h3>
+      <ol class="steps"><li>Ouvre <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> et connecte-toi avec ton compte Google.</li><li>Appuie sur « Create API key » et copie la clé.</li><li>Colle-la ici.</li></ol>
+      <div class="pwdrow"><input class="inp" id="s-key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Colle la clé ici" value="${esc(key)}"><button class="btn ghost small" data-act="key-toggle">Voir</button></div>
+      <label class="fld" style="margin-top:12px"><span>Modèle (laisse vide pour le modèle par défaut)</span><input id="s-model" placeholder="${esc(DEFAULT_MODEL)}" value="${esc(model)}" autocapitalize="off" spellcheck="false"></label>
+      <div class="row"><button class="btn" data-act="key-save">Enregistrer</button><button class="btn ghost" data-act="test">Tester la connexion</button></div>
+      <p class="note" id="s-msg" style="margin-top:10px"></p>
+      <p class="note">La clé reste sur ce téléphone. Les textes et photos envoyés à l'expert transitent par Google. Avec l'offre gratuite, Google peut les utiliser pour améliorer ses modèles.</p></div>
+    <div class="card"><h3>Sauvegarde</h3><p class="note">Les données sont uniquement dans ce téléphone. Fais une sauvegarde de temps en temps, surtout avant de changer de téléphone ou de vider le navigateur.</p>
+      <div class="row"><button class="btn small" data-act="export">Exporter</button><button class="btn small ghost" data-act="import">Importer</button></div></div>
+    ${deferredInstall ? '<div class="card"><h3>Installer l\'application</h3><button class="btn" data-act="install">Ajouter à l\'écran d\'accueil</button></div>' : ''}
+    <div class="card"><h3>À savoir</h3><p class="note">L'expert est une IA : il peut se tromper. Les doses de produits se lisent toujours sur l'étiquette. Les délais avant récolte sont calculés par l'application. En cas d'intoxication, va tout de suite dans un centre de santé.</p>
+      <button class="btn small ghost" style="color:var(--red);border-color:var(--red)" data-act="wipe">Effacer toutes les données</button></div>`;
+}
+
+/* =====================================================================
+   ACTIONS
+   ===================================================================== */
+const A = {
+  tab(b) { view = b.dataset.v; editing = null; render(true); if (view !== 'mission') $('#main').scrollTop = 0; },
+  start() { sendUser('Démarre le suivi de cette parcelle : présente-toi en une phrase, puis donne-moi la première mission.', [], true); },
+  visit() { sendUser('Je suis prêt pour la visite prévue.'); },
+  retry() { const p = cur(); if (p) runExpert(p); },
+  send() {
+    const ta = $('#msg'); const text = (ta ? ta.value : '').trim();
+    if (!text && !draft.length) return;
+    const ph = draft; draft = []; if (ta) ta.value = '';
+    sendUser(text || 'Voici les photos.', ph);
+  },
+  cam() { photoTarget = 'draft'; $('#f-cam').click(); },
+  gal() { photoTarget = 'draft'; $('#f-gal').click(); },
+  'rm-draft'(b) { draft = draft.filter(x => x !== b.dataset.id); idb.del('photos', b.dataset.id); renderComposer(); },
+  'field-photo'(b) { photoTarget = b.dataset.fid; $('#f-cam').click(); },
+  yn(b) { const seg = b.parentElement; seg.dataset.val = b.dataset.v; seg.querySelectorAll('button').forEach(x => x.classList.toggle('sel', x === b)); },
+  check(b) {
+    const p = cur(), m = p && p.messages.find(x => x.id === b.dataset.m); if (!m) return;
+    m.checks = m.checks || []; m.checks[+b.dataset.k] = b.checked; save();
+    b.closest('.step').classList.toggle('done', b.checked);
+  },
+  'submit-form'() {
+    const lines = [], ph = [];
+    document.querySelectorAll('.form [data-fid]').forEach(el => {
+      const label = el.dataset.label, fid = el.dataset.fid;
+      if (el.dataset.photo) { (formPhotos[fid] || []).forEach(id => ph.push(id)); if ((formPhotos[fid] || []).length) lines.push(`- ${label} : photo envoyée`); return; }
+      const v = el.classList.contains('seg') ? el.dataset.val : (el.value || '').trim();
+      if (v !== '' && v != null) lines.push(`- ${label} : ${v}`);
+    });
+    if (!lines.length) { alert('Remplis au moins un champ.'); return; }
+    formPhotos = {};
+    sendUser('Mes réponses :\n' + lines.join('\n'), ph);
+  },
+  'parcelle-new'() { view = 'parcelles'; editing = 'new'; render(); },
+  'parcelle-edit'(b) { editing = b.dataset.id; render(); },
+  'parcelle-cancel'() { editing = null; render(); },
+  'parcelle-pick'(b) { S.actif = b.dataset.id; save(); render(); },
+  'parcelle-del'(b) {
+    if (!confirm('Supprimer cette parcelle et tout son historique ?')) return;
+    S.parcelles = S.parcelles.filter(p => p.id !== b.dataset.id);
+    if (S.actif === b.dataset.id) S.actif = S.parcelles[0] ? S.parcelles[0].id : null;
+    save(); render();
+  },
+  'parcelle-save'(b) {
+    const g = id => $('#' + id).value.trim();
+    const nom = g('p-nom'), debut = g('p-debut');
+    let culture = $('#p-cult').value === '__autre' ? g('p-autre') : $('#p-cult').value;
+    if (!nom || !culture || !debut) { alert('Remplis le nom, la culture et la date de démarrage.'); return; }
+    const n = id => { const v = parseFloat(g(id)); return v > 0 ? v : null; };
+    const fields = { nom, culture, mode: $('#p-mode').value, debut, longueur: n('p-long'), largeur: n('p-larg'), superficie: n('p-sup'), pieds: n('p-pieds'), lieu: g('p-lieu'), notes: g('p-notes') };
+    const id = b.dataset.id;
+    if (id) Object.assign(S.parcelles.find(p => p.id === id), fields);
+    else { const p = { id: uid(), creee: today(), messages: [], releves: [], traitements: [], prochaine: null, memoire: '', ...fields }; S.parcelles.push(p); S.actif = p.id; }
+    editing = null; save(); view = id ? 'parcelles' : 'mission'; render(true);
+  },
+  'del-traitement'(b) { const p = cur(); if (!confirm('Supprimer ce traitement ?')) return; p.traitements = p.traitements.filter(t => t.id !== b.dataset.id); save(); render(); },
+  'del-releve'(b) { const p = cur(); p.releves = p.releves.filter(r => r.id !== b.dataset.id); save(); render(); },
+  'key-toggle'(b) { const i = $('#s-key'); i.type = i.type === 'password' ? 'text' : 'password'; b.textContent = i.type === 'password' ? 'Voir' : 'Cacher'; },
+  'key-save'() {
+    localStorage.setItem('pv_key', $('#s-key').value.trim());
+    const m = $('#s-model').value.trim(); if (m) localStorage.setItem('pv_model', m); else localStorage.removeItem('pv_model');
+    $('#s-msg').textContent = 'Enregistré.';
+  },
+  async test() {
+    A['key-save'](); const msg = $('#s-msg'); msg.textContent = 'Test en cours…';
+    try { const r = await gemini({ contents: [{ role: 'user', parts: [{ text: 'Réponds uniquement : OK' }] }] }); msg.textContent = 'Connexion réussie (modèle : ' + r.model + ').'; }
+    catch (e) { msg.textContent = 'Échec : ' + friendlyError(e); }
+  },
+  async export() {
+    const photos = await idb.entries('photos');
+    const blob = new Blob([JSON.stringify({ app: 'expert-phyto', exporte: new Date().toISOString(), state: S, photos })], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'expert-phyto-sauvegarde-' + today() + '.json'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  },
+  import() { $('#f-import').click(); },
+  async wipe() {
+    if (!confirm('Effacer TOUTES les données (parcelles, relevés, photos) de ce téléphone ?')) return;
+    await idb.clear('kv'); await idb.clear('photos'); S = { version: 1, actif: null, parcelles: [] }; draft = []; view = 'mission'; render();
+  },
+  async install() { if (!deferredInstall) return; deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall = null; render(); }
+};
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  if (b.type === 'checkbox') return; // géré par 'change'
+  const f = A[b.dataset.act]; if (f) f(b, e);
+});
+document.addEventListener('change', e => {
+  if (e.target.matches('input[data-act="check"]')) A.check(e.target);
+  if (e.target.id === 'p-cult') $('#p-autre-w').hidden = e.target.value !== '__autre';
+});
+$('#sel').addEventListener('change', e => { S.actif = e.target.value; draft = []; save(); render(true); });
+$('#f-cam').addEventListener('change', e => { addPhotos([...e.target.files]); e.target.value = ''; });
+$('#f-gal').addEventListener('change', e => { photoTarget = 'draft'; addPhotos([...e.target.files]); e.target.value = ''; });
+$('#f-import').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    if (!j.state || !Array.isArray(j.state.parcelles)) throw new Error('format');
+    if (!confirm('Remplacer toutes les données de ce téléphone par cette sauvegarde ?')) return;
+    S = j.state; await idb.clear('photos');
+    for (const [k, v] of Object.entries(j.photos || {})) await idb.set('photos', k, v);
+    await save(); view = 'mission'; render(true);
+  } catch (_) { alert('Fichier de sauvegarde invalide.'); }
+});
+window.addEventListener('online', () => render());
+window.addEventListener('offline', () => render());
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; if (view === 'reglages') render(); });
+
+/* =====================================================================
+   DÉMARRAGE
+   ===================================================================== */
+(async function boot() {
+  try { const st = await idb.get('kv', 'state'); if (st && Array.isArray(st.parcelles)) S = st; } catch (_) {}
+  S.parcelles.forEach(p => { p.messages ||= []; p.releves ||= []; p.traitements ||= []; });
+  if (!S.actif && S.parcelles[0]) S.actif = S.parcelles[0].id;
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  render(true);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+</body>
+</html>
